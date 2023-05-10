@@ -3,6 +3,19 @@
 import redis
 import uuid
 from typing import Union, Optional, Callable
+from functools import wraps
+
+
+def count_calls(f: Callable) -> Callable:
+    """
+    A wrapper function that counts how many times the
+    wrapped function has been called
+    """
+    @wraps(f)
+    def wrapper(*args, **kwds):
+        args[0]._redis.incr(f.__qualname__)
+        return f(*args, **kwds)
+    return wrapper
 
 
 class Cache:
@@ -12,6 +25,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         stores the input data in Redis using a randomly
@@ -21,7 +35,7 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: Optional[Callable]) -> Optional[
+    def get(self, key: str, fn: Optional[Callable] = None) -> Optional[
             Union[str, bytes, int, float]]:
         """
         Retrieves a value from Redis based on the key,
