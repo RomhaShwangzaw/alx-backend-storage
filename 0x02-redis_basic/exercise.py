@@ -2,7 +2,7 @@
 """Redis Module"""
 import redis
 import uuid
-from typing import Union, Optional, Callable
+from typing import Union, Optional, Callable, Any
 from functools import wraps
 
 
@@ -12,7 +12,8 @@ def count_calls(method: Callable) -> Callable:
     wrapped function has been called
     """
     @wraps(method)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs) -> Any:
+        """Invokes the method after incrementing its counter"""
         args[0]._redis.incr(method.__qualname__)
         return method(*args, **kwargs)
     return wrapper
@@ -24,7 +25,8 @@ def call_history(method: Callable) -> Callable:
     and outputs for a particular function.
     """
     @wraps(method)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs) -> Any:
+        """Invokes the method after storing its inputs and outputs"""
         args[0]._redis.rpush("{}:inputs".
                              format(method.__qualname__), str(args))
         output = method(*args, **kwargs)
