@@ -12,10 +12,10 @@ def count_calls(method: Callable) -> Callable:
     wrapped function has been called
     """
     @wraps(method)
-    def wrapper(*args, **kwargs) -> Any:
+    def wrapper(self, *args, **kwargs) -> Any:
         """Invokes the method after incrementing its counter"""
-        args[0]._redis.incr(method.__qualname__)
-        return method(*args, **kwargs)
+        self._redis.incr(method.__qualname__)
+        return method(self, *args, **kwargs)
     return wrapper
 
 
@@ -25,13 +25,13 @@ def call_history(method: Callable) -> Callable:
     and outputs for a particular function.
     """
     @wraps(method)
-    def wrapper(*args, **kwargs) -> Any:
+    def wrapper(self, *args, **kwargs) -> Any:
         """Invokes the method after storing its inputs and outputs"""
-        args[0]._redis.rpush("{}:inputs".
-                             format(method.__qualname__), str(args))
-        output = method(*args, **kwargs)
-        args[0]._redis.rpush("{}:outputs".
-                             format(method.__qualname__), str(output))
+        self._redis.rpush("{}:inputs".
+                          format(method.__qualname__), str(args))
+        output = method(self, *args, **kwargs)
+        self._redis.rpush("{}:outputs".
+                          format(method.__qualname__), str(output))
         return output
     return wrapper
 
