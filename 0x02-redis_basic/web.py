@@ -16,10 +16,15 @@ def count_url(method: Callable) -> Callable:
     result with an expiration time of 10 seconds.
     """
     @wraps(method)
-    def wrapper(*args, **kwargs):
-        r.incr(f"count:{args[0]}")
-        r.expire(f"count:{args[0]}", 10)
-        return method(*args, **kwargs)
+    def wrapper(url: str) -> str:
+        r.incr(f"count:{url}")
+        result = r.get(f"result:{url}")
+        if result:
+            return result.decode()
+        result = method(url)
+        r.set(f"count:{url}", 0)
+        r.setex(f"result:{url}", 10, result)
+        return result
     return wrapper
 
 
