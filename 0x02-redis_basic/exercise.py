@@ -12,9 +12,23 @@ def count_calls(f: Callable) -> Callable:
     wrapped function has been called
     """
     @wraps(f)
-    def wrapper(*args, **kwds):
+    def wrapper(*args, **kwargs):
         args[0]._redis.incr(f.__qualname__)
-        return f(*args, **kwds)
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def call_history(f: Callable) -> Callable:
+    """
+    A wrapper function that stores the history of inputs
+    and outputs for a particular function.
+    """
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        args[0]._redis.rpush("{}:inputs".format(f.__qualname__), str(args))
+        output = f(*args, **kwargs)
+        args[0]._redis.rpush("{}:outputs".format(f.__qualname__), str(output))
+        return output
     return wrapper
 
 
@@ -25,6 +39,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
