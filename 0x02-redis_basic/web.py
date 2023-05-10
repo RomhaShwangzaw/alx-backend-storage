@@ -7,6 +7,7 @@ from typing import Callable
 
 
 r = redis.Redis()
+"""Module-wide Redis instance"""
 
 
 def count_url(method: Callable) -> Callable:
@@ -21,7 +22,7 @@ def count_url(method: Callable) -> Callable:
         r.incr(f"count:{url}")
         result = r.get(f"result:{url}")
         if result:
-            return result.decode()
+            return result.decode("utf-8")
         result = method(url)
         r.set(f"count:{url}", 0)
         r.setex(f"result:{url}", 10, result)
