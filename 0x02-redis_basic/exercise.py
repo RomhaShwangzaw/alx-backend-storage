@@ -36,7 +36,7 @@ class Cache:
             return value
         return fn(value)
 
-    def get_str(self, key: str) -> str:
+    def get_str(self, key: str) -> Optional[str]:
         """
         Retrieves a value from Redis based on the key,
         then converts the value to a string.
@@ -44,9 +44,9 @@ class Cache:
         Return:
             the converted string
         """
-        self.get(key, str)
+        return self.get(key, str)
 
-    def get_int(self, key: str) -> int:
+    def get_int(self, key: str) -> Optional[int]:
         """
         Retrieves a value from Redis based on the key,
         then converts the value to an integer.
@@ -54,4 +54,4 @@ class Cache:
         Return:
             the converted integer
         """
-        self.get(key, int)
+        return self.get(key, int)
