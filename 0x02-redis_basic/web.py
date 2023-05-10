@@ -17,6 +17,7 @@ def count_url(method: Callable) -> Callable:
     """
     @wraps(method)
     def wrapper(url: str) -> str:
+        """Wrapper function that caches the result"""
         r.incr(f"count:{url}")
         result = r.get(f"result:{url}")
         if result:
