@@ -36,12 +36,12 @@ def call_history(method: Callable) -> Callable:
     return wrapper
 
 
-def replay(method: Callable):
+def replay(method: Callable) -> None:
     """Displays the history of calls of a particular function."""
     r = redis.Redis()
     name = method.__qualname__
     count = r.get(name)
-    print(f"{name} was called {count.decode()} times")
+    print("{} was called {} times:".format(name, count.decode()))
     inputs = r.lrange("{}:inputs".format(name), 0, -1)
     outputs = r.lrange("{}:outputs".format(name), 0, -1)
     zips = zip(inputs, outputs)
